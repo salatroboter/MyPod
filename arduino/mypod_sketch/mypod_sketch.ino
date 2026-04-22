@@ -8,6 +8,7 @@ SdFat sd;
 SdFile root;
 File myFile;
 String rootPath = "/";
+String currentDir="";
 
 void setup() {
 
@@ -25,7 +26,27 @@ void setup() {
   Serial.println("indexing...");
   processDirectory("/");
   Serial.println("Done");
+  enterDir("test");
+  Serial.println("setup - currentDir: " + currentDir);
+  enterDir("test1_1");
+  Serial.println("setup - currentDir: " + currentDir);
+  leaveCurrentDir();
+  leaveCurrentDir();
+  // re-open the file for reading:
+  if (!myFile.open("index.txt", O_READ)) {
+    sd.errorHalt("opening test.txt for read failed");
+  }
+  Serial.println("index.txt:");
+
+  // read from the file until there's nothing else in it:
+  int data;
+  while ((data = myFile.read()) >= 0) {
+    Serial.write(data);
+  }
+  // close the file:
+  myFile.close();
 }
+
 
 void loop() {
   int volDownButtonState = digitalRead(volDownPin);
@@ -100,4 +121,58 @@ void processDirectory(const char* path) {
 
   indexFile.close();
   dir.close();
+}
+
+bool enterDir(String dirName){
+  String newDir = currentDir + "/" + dirName;
+  Serial.println("dirname: " + dirName);
+  Serial.println("currentDir: " + currentDir);
+  currentDir = newDir;
+  return sd.chdir(dirName);
+}
+
+bool leaveCurrentDir(){
+  int lastSlash = currentDir.lastIndexOf("/");
+  String target = "";
+  if(lastSlash == 0){
+    currentDir = "/";
+  } else {
+    currentDir = currentDir.substring(0, lastSlash);
+  }
+  Serial.println("currentDir: " + currentDir);
+  return sd.chdir(currentDir);
+}
+
+// Button Actions
+bool buttonMenuAction(){
+  sd.chdir();
+  return true;
+}
+
+bool buttonVolumeUpAction(){
+  return true;
+}
+
+bool buttonVolumeDownAction(){
+  return true;
+}
+
+bool buttonNextAction(){
+  return true;
+}
+
+bool buttonPrevAction(){
+  return true;
+}
+
+bool buttonStartPauseAction(){
+  return true;
+}
+
+bool buttonSelectAction(){
+  return true;
+}
+
+bool buttonStandbyAction(){
+  return true;
 }
